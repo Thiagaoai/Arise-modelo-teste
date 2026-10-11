@@ -1,0 +1,2 @@
+ALTER TABLE messages ADD COLUMN flags TEXT;
+ALTER TABLE messages ADD COLUMN rating INTEGER;

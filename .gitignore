@@ -1,0 +1,11 @@
+.env
+*.db
+data/raw/
+results/
+node_modules/
+worker/node_modules/
+worker/.wrangler/
+worker/seed/
+worker/seed2/
+.DS_Store
+outputs/

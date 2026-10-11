@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "arise-apocalipse-bot",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "arise-bot",
+      "database_id": "1227b617-8454-4d33-8fa6-90c384b1a0e8"
+    }
+  ],
+  "vars": {
+    "MODEL": "anthropic/claude-haiku-5.5",
+    "DAILY_LIMIT": "40",
+    "MINUTE_LIMIT": "6",
+    "MAX_INPUT_CHARS": "1200",
+    "ELEVENLABS_VOICE_ID": "bZztR6P62TDbe6sgaZgz",
+    "VOICE_DAILY_LIMIT": "8",
+    "MAX_VOICE_SECONDS": "60",
+    "TTS_MAX_CHARS": "2200"
+  }
+  // Secrets (wrangler secret put): TELEGRAM_BOT_TOKEN, WEBHOOK_SECRET, OPENROUTER_API_KEY, ADMIN_TOKEN, ELEVENLABS_API_KEY
+  // Opcional: ADMIN_CHAT_ID (Telegram ID da equipe, recebe alerta de falha)
+}

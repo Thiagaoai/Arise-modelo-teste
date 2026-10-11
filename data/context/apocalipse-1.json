@@ -1,0 +1,182 @@
+{
+  "livro": "Apocalipse",
+  "capitulo": 1,
+  "versiculos": 20,
+  "origens_validas": [
+    "texto",
+    "lexico",
+    "tradicao_antiga",
+    "lacuna"
+  ],
+  "regra": "Toda afirmacao do bot deve vir de um bloco abaixo. 'texto' = versiculo citado. 'lexico' = Strong (1890, via lema SBLGNT). 'tradicao_antiga' = testemunho de pai da igreja, sempre apresentado como tradição, nunca como texto biblico. 'lacuna' = o bot diz que a base nao responde.",
+  "estrutura": [
+    {
+      "versiculos": "1-3",
+      "titulo": "Prólogo",
+      "origem": "texto",
+      "resumo": "Revelação de Jesus Cristo, dada por Deus para mostrar aos servos o que deve acontecer em breve; enviada por seu anjo a João, que testemunhou a palavra de Deus e o testemunho de Jesus. Bem-aventurança sobre quem lê, ouve e guarda."
+    },
+    {
+      "versiculos": "4-8",
+      "titulo": "Saudação às sete igrejas",
+      "origem": "texto",
+      "resumo": "Graça e paz de 'aquele que é, e que era, e que virá', dos sete Espíritos e de Jesus Cristo (fiel testemunha, primogênito dos mortos, Chefe dos reis da terra). Doxologia (5-6), anúncio da vinda com as nuvens (7) e palavra do Senhor Deus: Alfa e Ômega, o Todo-Poderoso (8)."
+    },
+    {
+      "versiculos": "9-11",
+      "titulo": "Comissão de João",
+      "origem": "texto",
+      "resumo": "João em Patmos, no dia do Senhor, ouve voz como de trombeta: escrever o que vê num livro e enviar às sete igrejas nomeadas no v. 11."
+    },
+    {
+      "versiculos": "12-20",
+      "titulo": "Visão de Cristo no meio dos castiçais",
+      "origem": "texto",
+      "resumo": "Sete castiçais de ouro; um semelhante a filho de homem (descrição 13-16); João cai como morto; Cristo: 'Não temas; eu sou o primeiro e o último... tenho as chaves da morte e do Hades' (17-18); ordem de escrever (19); o próprio texto interpreta os símbolos (20)."
+    }
+  ],
+  "fatos": [
+    {
+      "id": "autor_nome",
+      "origem": "texto",
+      "versiculos": [
+        "1:1",
+        "1:4",
+        "1:9"
+      ],
+      "afirmacao": "O autor se identifica como João e se diz irmão e companheiro dos leitores 'na aflição, no Reino e na paciência de Jesus'.",
+      "limite": "O texto não diz 'apóstolo' nem dá sobrenome ou cidade."
+    },
+    {
+      "id": "local",
+      "origem": "texto",
+      "versiculos": [
+        "1:9"
+      ],
+      "afirmacao": "João estava na ilha chamada Patmos 'por causa da palavra de Deus e por causa do testemunho de Jesus Cristo'.",
+      "limite": "O texto não diz que foi exilado nem por quem; diz o motivo (palavra e testemunho)."
+    },
+    {
+      "id": "destinatarios",
+      "origem": "texto",
+      "versiculos": [
+        "1:4",
+        "1:11"
+      ],
+      "afirmacao": "Sete igrejas na Ásia: Éfeso, Esmirna, Pérgamo, Tiatira, Sardes, Filadélfia e Laodiceia."
+    },
+    {
+      "id": "data_texto",
+      "origem": "lacuna",
+      "versiculos": [
+        "1:10"
+      ],
+      "afirmacao": "O texto não informa data. Só diz que a visão ocorreu 'no dia do Senhor'.",
+      "limite": "Qualquer data precisa vir da tradição, marcada como tal."
+    },
+    {
+      "id": "autoria_tradicao_justino",
+      "origem": "tradicao_antiga",
+      "fonte": "Justino Mártir, Diálogo com Trifão, cap. 81 (c. meados do séc. II)",
+      "url": "https://www.newadvent.org/fathers/01286.htm",
+      "citacao_en": "there was a certain man with us, whose name was John, one of the apostles of Christ, who prophesied, by a revelation that was made to him",
+      "afirmacao": "Justino atribui o Apocalipse a João, um dos apóstolos de Cristo.",
+      "limite": "É testemunho antigo, não texto bíblico. Não esgota o debate sobre qual João.",
+      "citacao_pt": "havia um certo homem conosco, cujo nome era João, um dos apóstolos de Cristo, que profetizou por uma revelação que lhe foi feita",
+      "citacao_pt_nota": "tradução livre do inglês, feita pela equipe; ao citar em português, indicar que é tradução livre"
+    },
+    {
+      "id": "data_tradicao_irineu",
+      "origem": "tradicao_antiga",
+      "fonte": "Irineu, Contra as Heresias, V.30.3 (c. 180 d.C.); citado por Eusébio, História Eclesiástica III.18.3",
+      "url": "https://www.newadvent.org/fathers/0103530.htm",
+      "citacao_en": "For that was seen no very long time since, but almost in our day, towards the end of Domitian's reign.",
+      "afirmacao": "Irineu situa 'aquilo que foi visto' no final do reinado de Domiciano (imperador 81-96 d.C.).",
+      "limite": "O verbo 'foi visto' é ambíguo: pode referir-se à visão, ao livro ou a João. Estudiosos divergem se isso data a escrita. O bot deve apresentar como 'tradição aponta para o fim do séc. I', nunca como fato do texto.",
+      "citacao_pt": "Pois isso foi visto não há muito tempo, mas quase em nossos dias, no fim do reinado de Domiciano.",
+      "citacao_pt_nota": "tradução livre do inglês, feita pela equipe; ao citar em português, indicar que é tradução livre"
+    },
+    {
+      "id": "patmos_tradicao_eusebio",
+      "origem": "tradicao_antiga",
+      "fonte": "Eusébio, História Eclesiástica III.18.1 e III.20.11",
+      "url": "https://www.newadvent.org/fathers/250103.htm",
+      "citacao_en": "[John] was condemned to dwell on the island of Patmos in consequence of his testimony to the divine word.",
+      "afirmacao": "Eusébio (séc. IV) entende Patmos como condenação sob Domiciano e diz que João voltou a Éfeso depois.",
+      "limite": "Eusébio depende de Irineu. Um comentarista antigo (Aprígio) atribuiu o exílio a Cláudio, então a tradição não é unânime. Esta última informação veio de resumo secundário e deve ser conferida antes de uso.",
+      "citacao_pt": "[João] foi condenado a habitar na ilha de Patmos por causa de seu testemunho da palavra divina.",
+      "citacao_pt_nota": "tradução livre do inglês, feita pela equipe; ao citar em português, indicar que é tradução livre"
+    }
+  ],
+  "raizes_gregas": [
+    {
+      "palavra": "ἀποκάλυψις",
+      "strong": "G602",
+      "versiculo": "1:1",
+      "sentido": "descoberta, ato de tirar o véu; revelação",
+      "origem": "lexico"
+    },
+    {
+      "palavra": "μαρτυρία / μαρτυρέω",
+      "strong": "G3141 / G3140",
+      "versiculo": "1:2, 1:5, 1:9",
+      "sentido": "testemunho / dar testemunho; raiz da palavra 'mártir'",
+      "origem": "lexico"
+    },
+    {
+      "palavra": "ἐκκλησία",
+      "strong": "G1577",
+      "versiculo": "1:4, 1:11, 1:20",
+      "sentido": "chamar para fora; assembleia dos chamados",
+      "origem": "lexico"
+    },
+    {
+      "palavra": "ὑπομονή",
+      "strong": "G5281",
+      "versiculo": "1:9",
+      "sentido": "perseverança alegre ou esperançosa",
+      "origem": "lexico"
+    },
+    {
+      "palavra": "παντοκράτωρ",
+      "strong": "G3841",
+      "versiculo": "1:8",
+      "sentido": "o que governa tudo",
+      "origem": "lexico"
+    },
+    {
+      "palavra": "μυστήριον",
+      "strong": "G3466",
+      "versiculo": "1:20",
+      "sentido": "segredo revelado",
+      "origem": "lexico"
+    },
+    {
+      "palavra": "ᾅδης",
+      "strong": "G86",
+      "versiculo": "1:18",
+      "sentido": "o lugar dos que partiram; 'Hades'",
+      "origem": "lexico"
+    }
+  ],
+  "divergencias_de_traducao": [
+    {
+      "versiculo": "1:10",
+      "observacao": "Bíblia Livre e Almeida dizem 'arrebatado em espírito'. O grego (Tischendorf) tem ἐγενόμην ἐν πνεύματι, literalmente 'vim a estar em espírito'. O bot deve mostrar o grego e não afirmar arrebatamento como fato do original."
+    },
+    {
+      "versiculo": "1:13",
+      "observacao": "Bíblia Livre traz 'semelhante a o Filho do homem'. O grego tem υἱὸν ἀνθρώπου sem artigo: 'um semelhante a filho de homem'. Citar como 'semelhante a filho de homem' e indicar a diferença."
+    },
+    {
+      "versiculo": "1:18",
+      "observacao": "Almeida diz 'inferno'; Livre diz 'mundo dos mortos'; o grego tem ᾅδης (Hades). Não usar 'inferno' como equivalente."
+    }
+  ],
+  "fora_do_escopo_da_base": [
+    "imagens ou ilustrações",
+    "geografia e história das sete cidades (precisa de fonte própria)",
+    "escolas de interpretação (preterista, futurista etc.)",
+    "datação científica da escrita além do que está acima"
+  ]
+}
