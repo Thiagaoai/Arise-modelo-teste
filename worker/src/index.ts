@@ -37,10 +37,7 @@ interface TgCallback {
 }
 interface TgUpdate { update_id: number; message?: TgMessage; callback_query?: TgCallback }
 
-interface Chapter {
-  verses: { v: number; livre: string; almeida: string; grego: string }[];
-  context: unknown;
-}
+interface Chapter { context: unknown } // contexto curado opcional; o texto de qualquer capítulo vem do banco
 const CHAPTERS = DATA.chapters as unknown as Record<string, Chapter>;
 
 const MSG = {
@@ -51,16 +48,13 @@ const MSG = {
   needCode: 'Para usar o tutor, entre com o código da escola: /entrar SEU-CODIGO',
   badCode: 'Esse código não é válido ou já foi usado. Confira com a escola.',
   welcome:
-    'Pronto, você está dentro! Pode perguntar sobre Apocalipse (por enquanto, o capítulo 1). ' +
+    'Pronto, você está dentro! Pode perguntar sobre qualquer capítulo de Apocalipse (1 a 22). ' +
     'Por exemplo: "O que está escrito em Ap 1:9?" ou "O que significa a palavra testemunho no v. 2?"',
   inactive: 'Seu acesso está desativado. Fale com a equipe da escola.',
   slow: 'Calma, você mandou muitas mensagens seguidas. Espere um minuto e tente de novo.',
   daily: 'Você chegou ao limite de mensagens de hoje. Amanhã continuamos o estudo.',
   long: 'Sua mensagem ficou grande demais. Resuma em poucas linhas.',
   down: 'Estou fora do ar agora. Tente de novo em alguns minutos. Se continuar, avise a equipe da escola.',
-  chapterMissing: (n: number) =>
-    `O capítulo ${n} ainda não está na minha base de estudo. Por enquanto só tenho o capítulo 1. ` +
-    'Para os outros, fale com o professor.',
   textOnly: 'Entendo mensagens de texto e de voz.',
   noVoice: 'O áudio ainda não está disponível. Pode escrever a pergunta?',
   voiceLong: (n: number) => `Seu áudio ficou longo (limite de ${n} segundos). Pode mandar em partes ou escrever?`,
@@ -71,7 +65,7 @@ const MSG = {
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
-    if (url.pathname === '/health') return Response.json({ ok: true, chapters: Object.keys(CHAPTERS) });
+    if (url.pathname === '/health') return Response.json({ ok: true, chapters: 22, curated: Object.keys(CHAPTERS) });
     if (url.pathname === '/webhook' && req.method === 'POST') return webhook(req, env);
     if (url.pathname === '/panel') return new Response(PANEL_HTML, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });
     if (url.pathname.startsWith('/admin/')) return admin(req, env, url);
@@ -157,15 +151,7 @@ async function handle(env: Env, update: TgUpdate): Promise<void> {
     return;
   }
 
-  // Capítulo citado que ainda não está na base: resposta fixa, sem gastar o modelo.
   const asked = mentionedChapters(text);
-  const missingChs = asked.filter((n) => !CHAPTERS[String(n)]);
-  if (asked.length && missingChs.length === asked.length) {
-    const a = MSG.chapterMissing(missingChs[0]);
-    await send(env, chatId, a);
-    await log(env, tgId, text, a, 'chapter_missing', null, 0, 0);
-    return;
-  }
 
   await tg(env, 'sendChatAction', { chat_id: chatId, action: 'typing' });
   const history = await recentHistory(env, tgId);
@@ -191,12 +177,15 @@ async function handle(env: Env, update: TgUpdate): Promise<void> {
   if (cls.intent === 'pedido_tarefa' && sure) { mode = 'tarefa'; flags.push('tarefa'); }
   if (cls.intent === 'pessoal_pastoral' && sure) { mode = 'pastoral'; flags.push('pastoral'); }
 
-  // Outras passagens da Bíblia: o texto vem do banco, nunca da memória do modelo.
-  const selected = asked.length ? asked.filter((n) => CHAPTERS[String(n)]).map(String) : Object.keys(CHAPTERS);
+  // Contexto: Apocalipse inteiro (Bíblia Livre) + Almeida e grego dos capítulos em foco.
   const earlier = history.filter((h) => h.role === 'assistant').slice(-2).flatMap((h) => parseRefs(h.content));
+  const focus = pickFocus(asked, [...parseRefs(text), ...earlier]);
+  const [book, focusCtx] = await Promise.all([bookContext(env), focusContext(env.DB, focus)]);
+
+  // Outras passagens da Bíblia: o texto vem do banco, nunca da memória do modelo.
   const wanted = [...parseRefs(text), ...cls.refs.flatMap((r) => parseRefs(r)), ...earlier]
     .filter((r, i, all) => all.findIndex((x) => x.label === r.label) === i)
-    .filter((r) => !(r.book === 66 && CHAPTERS[String(r.ch)]))
+    .filter((r) => r.book !== 66) // Apocalipse já está inteiro no contexto
     .slice(0, 6);
   const refLines: string[] = [];
   const refTexts: string[] = [];
@@ -205,17 +194,17 @@ async function handle(env: Env, update: TgUpdate): Promise<void> {
     if (got) { refLines.push(`- ${got.label} (Bíblia Livre): ${got.text}`); refTexts.push(got.text); }
     else refLines.push(`- ${r.label}: NÃO EXISTE na Bíblia. Diga ao aluno que essa referência não existe.`);
   }
+  const curated = focus.filter((n) => CHAPTERS[String(n)]).map((n) => `## Apocalipse ${n}: contexto curado (JSON)\n${JSON.stringify(CHAPTERS[String(n)].context)}`);
   const extraSystem =
-    (refLines.length ? `\n\n# REFERÊNCIAS (texto verificado)\n${refLines.join('\n')}\n` : '') +
-    (missingChs.length ? `\nAVISO: o aluno pediu o(s) capítulo(s) ${missingChs.join(', ')} de Apocalipse, que ainda NÃO estão na base. Diga isso claramente no início e responda só com o que está no contexto.\n` : '') +
+    (focusCtx.text ? `\n\n# CAPÍTULOS EM FOCO (Almeida Atualizada e grego Tischendorf)\n${focusCtx.text}\n` : '') +
+    (curated.length ? `\n${curated.join('\n\n')}\n` : '') +
+    (refLines.length ? `\n# REFERÊNCIAS (texto verificado)\n${refLines.join('\n')}\n` : '') +
     `\nMODO: ${mode}\n`;
 
   const pool = [
     text, ...refTexts, ...history.filter((h) => h.role === 'assistant').map((h) => h.content),
-    ...selected.flatMap((id) => [
-      JSON.stringify(CHAPTERS[id].context),
-      ...CHAPTERS[id].verses.flatMap((v) => [v.livre, v.almeida, v.grego]),
-    ]),
+    ...book.lines, ...focusCtx.verses, JSON.stringify(DATA.livro),
+    ...focus.filter((n) => CHAPTERS[String(n)]).map((n) => JSON.stringify(CHAPTERS[String(n)].context)),
   ];
   const studentLabels = new Set(parseRefs(text).map((r) => r.label));
   const check = async (answer: string) => ({
@@ -223,7 +212,7 @@ async function handle(env: Env, update: TgUpdate): Promise<void> {
     refs: await missingRefs(env.DB, parseRefs(answer).filter((r) => !studentLabels.has(r.label))),
   });
 
-  let result = await askModel(env, text, history, selected, extraSystem);
+  let result = await askModel(env, text, history, extraSystem);
   if (!result) {
     await send(env, chatId, MSG.down);
     await log(env, tgId, text, MSG.down, 'error', env.MODEL, 0, 0);
@@ -233,7 +222,7 @@ async function handle(env: Env, update: TgUpdate): Promise<void> {
   // Resposta longa demais: pede uma versão curta uma vez (exceto quando o aluno pediu o texto dos versículos).
   if (result.text.length > 1400 && !/o que (est[aá] )?escrit/i.test(text)) {
     flags.push('encurtada');
-    const short = await askModel(env, text, history, selected, extraSystem, [
+    const short = await askModel(env, text, history, extraSystem, [
       { role: 'assistant', content: result.text },
       { role: 'user', content: 'Está longa. Refaça em no máximo 80 palavras, direto ao ponto, sem introdução nem resumo final, mantendo as citações exatas.' },
     ]);
@@ -248,7 +237,7 @@ async function handle(env: Env, update: TgUpdate): Promise<void> {
       (problems.refs.length ? `estas referências não existem: ${problems.refs.join(', ')}. ` : '') +
       'Reescreva a resposta citando entre aspas apenas texto copiado exatamente dos versículos fornecidos; ' +
       'o que não puder citar, parafraseie sem aspas. Não mencione esta revisão.';
-    const again = await askModel(env, text, history, selected, extraSystem, [
+    const again = await askModel(env, text, history, extraSystem, [
       { role: 'assistant', content: result.text }, { role: 'user', content: note },
     ]);
     if (again) { result = { text: again.text, tin: result.tin + again.tin, tout: result.tout + again.tout }; problems = await check(result.text); }
@@ -289,25 +278,56 @@ async function redeem(env: Env, tgId: number, name: string | undefined, raw: str
 
 // ---------- Modelo ----------
 
-function chapterContext(ids: string[]): string {
-  return ids.map((id) => {
-    const ch = CHAPTERS[id];
-    const verses = ch.verses
-      .map((v) => `${v.v}. [Livre] ${v.livre} | [Almeida] ${v.almeida} | [Grego] ${v.grego}`)
-      .join('\n');
-    return `## Apocalipse ${id}: versículos\n${verses}\n\n## Apocalipse ${id}: fatos, raízes e divergências (JSON)\n${JSON.stringify(ch.context)}`;
-  }).join('\n\n');
+// Apocalipse inteiro em português (Bíblia Livre): o modelo enxerga o livro todo, qualquer capítulo, a qualquer momento.
+let BOOK: { text: string; lines: string[]; at: number } | null = null;
+async function bookContext(env: Env) {
+  if (BOOK && Date.now() - BOOK.at < 600_000) return BOOK;
+  const rows = await env.DB.prepare('SELECT ch, v, text FROM bible WHERE book = 66 ORDER BY ch, v')
+    .all<{ ch: number; v: number; text: string }>();
+  const lines = rows.results.map((r) => `Ap ${r.ch}:${r.v} ${r.text.trim()}`);
+  BOOK = { text: lines.join('\n'), lines: rows.results.map((r) => r.text), at: Date.now() };
+  return BOOK;
+}
+
+// Até 3 capítulos em foco (os pedidos, os citados e os da última resposta); acima disso só o livro inteiro.
+function pickFocus(asked: number[], refs: { book: number; ch: number }[]): number[] {
+  const set = new Set<number>(asked);
+  for (const r of refs) if (r.book === 66) set.add(r.ch);
+  const list = [...set].filter((n) => n >= 1 && n <= 22).sort((a, b) => a - b);
+  return list.length <= 3 ? list : [];
+}
+
+async function focusContext(db: D1Database, chs: number[]): Promise<{ text: string; verses: string[] }> {
+  const out: string[] = [];
+  const verses: string[] = [];
+  for (const ch of chs) {
+    const [alm, grc] = await Promise.all([
+      db.prepare('SELECT v, text FROM almeida WHERE ch = ? ORDER BY v').bind(ch).all<{ v: number; text: string }>(),
+      db.prepare('SELECT v, text FROM greek WHERE ch = ? ORDER BY v').bind(ch).all<{ v: number; text: string }>(),
+    ]);
+    const g = new Map(grc.results.map((r) => [r.v, r.text.trim()]));
+    for (const a of alm.results) {
+      out.push(`Ap ${ch}:${a.v} [Almeida] ${a.text.trim()} | [Grego] ${g.get(a.v) ?? ''}`);
+      verses.push(a.text, g.get(a.v) ?? '');
+    }
+  }
+  return { text: out.join('\n'), verses };
 }
 
 async function askModel(
-  env: Env, question: string, history: { role: string; content: string }[], ids: string[],
+  env: Env, question: string, history: { role: string; content: string }[],
   extraSystem = '', tail: { role: string; content: string }[] = [],
 ) {
-  const system = `${DATA.prompt}\n\n# CONTEXTO\n\n${chapterContext(ids)}\n${extraSystem}`;
+  const book = await bookContext(env);
+  const stable = `${DATA.prompt}\n\n# CONTEXTO\n\n## Fatos do livro (JSON)\n${JSON.stringify(DATA.livro)}\n\n## Apocalipse inteiro (Bíblia Livre)\n${book.text}\n`;
   try {
     const d = await openrouter(env, {
       model: env.MODEL, max_tokens: 4000, temperature: 0.2,
-      messages: [{ role: 'system', content: system }, ...history, { role: 'user', content: question }, ...tail],
+      messages: [
+        // A parte fixa (prompt + livro) vai em cache: perguntas seguidas pagam bem menos pela entrada.
+        { role: 'system', content: [{ type: 'text', text: stable, cache_control: { type: 'ephemeral' } }, { type: 'text', text: extraSystem || '\n' }] },
+        ...history, { role: 'user', content: question }, ...tail,
+      ],
     }, 50_000);
     const text = d.choices?.[0]?.message?.content?.trim();
     if (!text) throw new Error('resposta vazia');

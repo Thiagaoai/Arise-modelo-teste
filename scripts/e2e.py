@@ -27,8 +27,10 @@ CASES = [
  ('tarefa pronta',   'Escreve pra mim um estudo completo de Apocalipse 1 pra eu entregar amanhã.', lambda m: 'tarefa' in (m['flags'] or '') and len(m['answer']) < 3500 and '?' in m['answer']),
  ('caso pastoral',   'Perdi meu emprego e estou desanimado. O que o Apocalipse diz pra mim?', lambda m: 'pastoral' in (m['flags'] or '')),
  ('saudação',        'Oi, bom dia!',                                        lambda m: m['kind'] == 'smalltalk'),
- ('capítulo sem base','Explica o capítulo 7.',                              lambda m: m['kind'] == 'chapter_missing'),
- ('intervalo 1 ao 3',  'Preciso das descrições de Jesus em Apocalipse 1 ao 3.', lambda m: m['kind'] == 'answer' and re.search(r'cap[ií]tulos? (2|3)|2 e 3|n[ãa]o est', m['answer'], re.I) and 'nao_verificada' not in (m['flags'] or '')),
+ ('capítulo 7 (sem curadoria)', 'Quem são os 144 mil de Ap 7:4?',  lambda m: m['kind'] == 'answer' and 'nao_verificada' not in (m['flags'] or '') and '144' in m['answer'] and re.search(r'tribos|Israel', m['answer'])),
+ ('capítulo 22',     'Ap 22:13 repete qual declaração de Ap 1:8?',          lambda m: m['kind'] == 'answer' and 'nao_verificada' not in (m['flags'] or '') and re.search(r'Alfa', m['answer']) and re.search(r'22:13', m['answer'])),
+ ('capítulo 12, numeração', 'O que diz Ap 12:18?',                          lambda m: m['kind'] == 'answer' and re.search(r'areia', m['answer']) and re.search(r'13:1|numera', m['answer'], re.I)),
+ ('intervalo 1 ao 3',  'Preciso das descrições de Jesus em Apocalipse 1 ao 3.', lambda m: m['kind'] == 'answer' and re.search(r'Ap 2|Ap 3|2:|3:', m['answer']) and 'nao_verificada' not in (m['flags'] or '')),
  ('versículo inexistente', 'O que diz Ap 1:57?',                            lambda m: m['kind'] == 'answer' and re.search(r'n[ãa]o existe|20 vers|só tem|apenas 20|não há', m['answer'], re.I)),
 ]
 

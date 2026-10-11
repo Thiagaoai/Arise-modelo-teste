@@ -9,10 +9,11 @@ BK = {o: i + 1 for i, o in enumerate(OSIS)}
 
 stm = ["CREATE TABLE IF NOT EXISTS bible (book INTEGER NOT NULL, ch INTEGER NOT NULL, v INTEGER NOT NULL, text TEXT NOT NULL, PRIMARY KEY (book, ch, v));",
        "CREATE TABLE IF NOT EXISTS greek (ch INTEGER, v INTEGER, text TEXT NOT NULL, PRIMARY KEY (ch,v));",
+       "CREATE TABLE IF NOT EXISTS almeida (ch INTEGER, v INTEGER, text TEXT NOT NULL, PRIMARY KEY (ch,v));",
        "CREATE TABLE IF NOT EXISTS words (ch INTEGER, v INTEGER, pos INTEGER, tag TEXT, form TEXT, lemma TEXT, strong TEXT, gloss TEXT, def TEXT, PRIMARY KEY (ch,v,pos));",
        "CREATE TABLE IF NOT EXISTS xrefs (ch INTEGER, v INTEGER, to_book INTEGER, to_ch INTEGER, to_v1 INTEGER, to_v2 INTEGER, votes INTEGER);",
        "CREATE INDEX IF NOT EXISTS idx_xrefs ON xrefs (ch, v, votes);",
-       "DELETE FROM bible;", "DELETE FROM greek;", "DELETE FROM words;", "DELETE FROM xrefs;"]
+       "DELETE FROM bible;", "DELETE FROM greek;", "DELETE FROM almeida;", "DELETE FROM words;", "DELETE FROM xrefs;"]
 def ins(table, rows, step):
     for i in range(0, len(rows), step):
         stm.append(f"INSERT INTO {table} VALUES " + ",".join("(" + ",".join('NULL' if x is None else (str(x) if isinstance(x, int) else q(x)) for x in r) + ")" for r in rows[i:i + step]) + ";")
@@ -20,6 +21,7 @@ def ins(table, rows, step):
 full = json.load(open(f'{ROOT}/data/raw/livre-full.json', encoding='utf8'))
 ins('bible', [(b['nr'], c['chapter'], v['verse'], v['text'].strip()) for b in full['books'] for c in b['chapters'] for v in c['verses']], 30)
 ins('greek', [(v['chapter'], v['verse'], v['text'].strip()) for c in range(1, 23) for v in json.load(open(f'{ROOT}/data/raw/tischendorf/{c}.json', encoding='utf8'))['verses']], 40)
+ins('almeida', [(v['chapter'], v['verse'], v['text'].strip()) for c in range(1, 23) for v in json.load(open(f'{ROOT}/data/raw/almeida/{c}.json', encoding='utf8'))['verses']], 40)
 db = sqlite3.connect(f'{ROOT}/data/apocalipse.db')
 ins('words', db.execute("select ch,v,pos,tag,form,lemma,strong,gloss_kjv,def_strong from words").fetchall(), 40)
 pat = re.compile(r'^([1-3]?[A-Za-z]+)\.(\d+)\.(\d+)(?:-([1-3]?[A-Za-z]+)\.(\d+)\.(\d+))?$')
